@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Digz">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<title>Digz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0d0f;
+    --surface:#17171b;
+    --surface2:#1f1f25;
+    --line:#2b2b32;
+    --amber:#ffa62b;      /* primary / dig */
+    --amber-d:#c97d17;
+    --cyan:#2ec4d6;       /* listen / spotify */
+    --green:#3ddc8f;      /* done / complete */
+    --red:#ff5c5c;        /* remove */
+    --txt:#f3f2ee;
+    --muted:#8a8a92;
+    --muted2:#606069;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+    padding:env(safe-area-inset-top) 14px calc(env(safe-area-inset-bottom) + 60px) 14px;
+    max-width:560px;margin:0 auto;line-height:1.5;
+  }
+  .wordmark{font-family:'Anton',Impact,sans-serif;letter-spacing:.02em;}
+
+  /* header */
+  header{padding:18px 2px 12px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;}
+  .brand h1{margin:0;font-size:40px;line-height:.9;color:var(--txt);}
+  .brand h1 .z{color:var(--amber);}
+  .brand .tag{font-family:'Anton',Impact,sans-serif;font-size:11px;letter-spacing:.28em;color:var(--muted);margin-top:4px;}
+  .counters{text-align:right;flex:0 0 auto;}
+  .counters .row{display:flex;gap:12px;justify-content:flex-end;}
+  .counters .n{font-family:'Anton',Impact,sans-serif;font-size:26px;line-height:1;color:var(--amber);}
+  .counters .n.tot{color:var(--txt);}
+  .counters .lab{font-size:10px;letter-spacing:.14em;color:var(--muted);margin-top:2px;}
+
+  /* section eyebrow */
+  .eyebrow{font-family:'Anton',Impact,sans-serif;font-size:13px;letter-spacing:.22em;color:var(--muted);margin:22px 2px 8px;display:flex;align-items:center;gap:8px;}
+  .eyebrow .bar{height:2px;flex:1;background:var(--line);}
+
+  /* paste box */
+  .intake{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;}
+  .intake textarea{
+    width:100%;min-height:74px;resize:vertical;background:var(--bg);color:var(--txt);
+    border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;font-size:15px;
+  }
+  .intake textarea::placeholder{color:var(--muted2);}
+  .intake .hint{font-size:11.5px;color:var(--muted);margin:8px 2px 0;}
+  .intake .btnrow{display:flex;gap:8px;margin-top:10px;}
+  .primary{
+    flex:1;background:var(--amber);color:#20140a;border:none;border-radius:10px;
+    padding:12px;font-weight:800;font-size:15px;cursor:pointer;letter-spacing:.02em;
+  }
+  .primary:active{background:var(--amber-d);}
+  .seed{
+    background:transparent;color:var(--cyan);border:1px solid var(--line);border-radius:10px;
+    padding:12px 13px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;
+  }
+  .seed:active{background:var(--surface2);}
+
+  /* crate cards */
+  .card{
+    position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:13px 13px 12px;margin-bottom:10px;
+    animation:pop .18s ease;
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .card .title{font-size:17px;font-weight:800;color:var(--txt);word-break:break-word;padding-right:26px;cursor:text;}
+  .card .title:empty::before{content:'無題';color:var(--muted2);}
+  .card .artist{font-size:13px;color:var(--amber);margin-top:2px;cursor:text;}
+  .card .artist.empty{color:var(--muted2);}
+  .card .actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:11px;}
+  .btn{border:none;border-radius:9px;padding:11px 8px;font-size:13.5px;font-weight:700;cursor:pointer;letter-spacing:.01em;}
+  .btn.claude{grid-column:1 / -1;background:var(--amber);color:#20140a;}
+  .btn.claude:active{background:var(--amber-d);}
+  .btn.genius{background:var(--surface2);color:var(--txt);border:1px solid var(--line);}
+  .btn.spot{background:transparent;color:var(--cyan);border:1px solid #245b63;}
+  .btn.done{background:transparent;color:var(--green);border:1px solid #1f6b4c;}
+  .btn.genius:active,.btn.spot:active,.btn.done:active{background:var(--surface2);}
+  .card.solo .actions{grid-template-columns:1fr 1fr;}
+  .rm{
+    position:absolute;top:9px;right:9px;width:26px;height:26px;border-radius:50%;
+    background:var(--surface2);color:var(--muted);border:1px solid var(--line);
+    font-size:16px;line-height:1;cursor:pointer;padding:0;
+  }
+  .rm:active{color:var(--red);border-color:var(--red);}
+
+  /* log */
+  .logrow{
+    display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;
+    padding:11px 12px;background:var(--surface);border:1px solid var(--line);
+    border-left:3px solid var(--amber);border-radius:10px;margin-bottom:7px;
+  }
+  .logrow .dig{font-family:'Anton',Impact,sans-serif;font-size:13px;letter-spacing:.06em;color:var(--amber);}
+  .logrow .lt{font-size:14px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .logrow .lt .art{color:var(--muted);font-weight:400;}
+  .logrow .ld{font-size:11px;color:var(--muted2);white-space:nowrap;}
+
+  /* empty */
+  .empty{
+    border:1px dashed var(--line);border-radius:14px;padding:20px 16px;text-align:center;
+    color:var(--muted);font-size:13.5px;line-height:1.6;
+  }
+
+  /* footer + tools */
+  .tools{display:flex;justify-content:center;gap:18px;margin:22px 0 6px;}
+  .tools button{background:none;border:none;color:var(--muted2);font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+  .foot{text-align:center;color:var(--muted2);font-size:11px;letter-spacing:.14em;margin-top:6px;}
+  .foot .dot{color:var(--amber);}
+
+  /* toast */
+  #toast{
+    position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%) translateY(20px);
+    background:var(--amber);color:#20140a;font-weight:800;font-size:13.5px;padding:11px 16px;border-radius:11px;
+    opacity:0;pointer-events:none;transition:.2s;z-index:50;max-width:88%;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.5);
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  #toast.ok{background:var(--green);}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1 class="wordmark">DIG<span class="z">Z</span></h1>
+      <div class="tag">LYRIC CRATE</div>
+    </div>
+    <div class="counters">
+      <div class="row">
+        <div><div class="n" id="cMonth">0</div><div class="lab">今月</div></div>
+        <div><div class="n tot" id="cTotal">0</div><div class="lab">通算</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="eyebrow"><span>投入口</span><span class="bar"></span></div>
+  <div class="intake">
+    <textarea id="paste" placeholder="ここに貼る（1行1曲）&#10;例）Radio - Future&#10;Spotifyのシェア文 / Genius URL / 複数行まとめて貼ってもOK"></textarea>
+    <div class="btnrow">
+      <button class="primary" onclick="ingest()">CRATEに入れる</button>
+      <button class="seed" onclick="seedFuture()">Future『The Real Me』を投入</button>
+    </div>
+    <div class="hint">「曲名 - アーティスト」でも、Spotify/Geniusのリンクだけでもいける。曲名・アーティストはカードをタップで直せる。</div>
+  </div>
+
+  <div class="eyebrow"><span>CRATE — 掘る前の山</span><span class="bar"></span></div>
+  <div id="crate"></div>
+
+  <div class="eyebrow"><span>DIG LOG — 掘った記録</span><span class="bar"></span></div>
+  <div id="log"></div>
+
+  <div class="tools">
+    <button onclick="backup()">バックアップ</button>
+    <button onclick="restore()">復元</button>
+  </div>
+  <div class="foot"><span class="wordmark">2026.07.16</span> <span class="dot">·</span> <span class="wordmark">Digz v1</span></div>
+
+  <div id="toast"></div>
+
+<script>
+"use strict";
+const KEY="digz_v1";
+const ARTISTS=["Future","Travis Scott","Bladee","Ecco2k","Drake","Playboi Carti","Lil Uzi Vert"];
+const FUTURE_TRM=["Radio","If I Could","Fukk a Interview","Trench Coat","No Misery","Big Moment","Snow in Skyami","Konnichiwa"];
+
+let state=load();
+
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw){const s=JSON.parse(raw); return {v:"1", seq:s.seq||0, crate:s.crate||[], log:s.log||[]};}
+  }catch(e){}
+  return {v:"1", seq:0, crate:[], log:[]};
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ toast("保存に失敗（容量オーバーかも）"); } }
+function uid(){ return "d"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+function localYM(d){ d=d||new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
+
+/* ---------- paste parsing ---------- */
+function matchArtist(s){
+  const t=(s||"").trim().toLowerCase();
+  if(!t) return "";
+  for(const a of ARTISTS){ if(a.toLowerCase()===t) return a; }
+  return "";
+}
+function fromGeniusSlug(url){
+  try{
+    let slug=url.split("genius.com/")[1].split(/[?#]/)[0];
+    slug=decodeURIComponent(slug).replace(/-lyrics$/i,"").replace(/-/g," ").trim();
+    slug=slug.replace(/\b\w/g,c=>c.toUpperCase());
+    return slug;
+  }catch(e){ return ""; }
+}
+function parseLine(line){
+  const urls=line.match(/https?:\/\/[^\s]+/g)||[];
+  const spotifyUrl=urls.find(u=>/open\.spotify\.com|spotify\.link/i.test(u))||"";
+  const geniusUrl=urls.find(u=>/genius\.com/i.test(u))||"";
+  let text=line;
+  urls.forEach(u=>{ text=text.split(u).join(" "); });
+  text=text.replace(/[-–—|:·、]+\s*$/,"").replace(/^\s*[-–—|:·、]+/,"").replace(/\s+/g," ").trim();
+
+  let title="",artist="";
+  if(text){
+    const parts=text.split(/\s+[-–—·|]\s+|\s+by\s+/i).map(x=>x.trim()).filter(Boolean);
+    if(parts.length>=2){
+      const a=parts[0], b=parts.slice(1).join(" ");
+      const ma=matchArtist(a), mb=matchArtist(b);
+      if(mb){ title=a; artist=mb; }
+      else if(ma){ title=b; artist=ma; }
+      else { title=a; artist=b; }   // 既定: 「曲名 - アーティスト」
+    } else { title=text; }
+  } else if(geniusUrl){
+    title=fromGeniusSlug(geniusUrl);
+  }
+  if(!title) title="";  // Spotifyリンクのみ等 → 無題（タップ編集）
+  return { id:uid(), title, artist, spotifyUrl, geniusUrl, addedAt:Date.now() };
+}
+function ingest(){
+  const box=document.getElementById("paste");
+  const lines=box.value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(!lines.length){ toast("枠が空やで"); return; }
+  let added=0;
+  for(const line of lines){
+    const item=parseLine(line);
+    const dup=state.crate.some(c=>
+      (c.title||"").toLowerCase()===(item.title||"").toLowerCase() &&
+      (c.artist||"").toLowerCase()===(item.artist||"").toLowerCase() &&
+      (c.title||item.spotifyUrl||item.geniusUrl)
+    );
+    if(dup) continue;
+    state.crate.push(item); added++;
+  }
+  box.value="";
+  save(); render();
+  toast(added? added+"曲 CRATEに追加":"重複だけやったで", added>0);
+}
+function seedFuture(){
+  let added=0;
+  for(const t of FUTURE_TRM){
+    const dup=state.crate.some(c=>(c.title||"").toLowerCase()===t.toLowerCase()&&(c.artist||"")==="Future");
+    if(dup) continue;
+    state.crate.push({id:uid(),title:t,artist:"Future",spotifyUrl:"",geniusUrl:"",addedAt:Date.now()});
+    added++;
+  }
+  save(); render();
+  toast(added? "Future『The Real Me』"+added+"曲 投入":"もう入ってるで", added>0);
+}
+
+/* ---------- card actions ---------- */
+function getItem(id){ return state.crate.find(c=>c.id===id); }
+function editField(id,field){
+  const it=getItem(id); if(!it) return;
+  const label=field==="title"?"曲名":"アーティスト";
+  const v=prompt(label, it[field]||"");
+  if(v===null) return;
+  it[field]=v.trim();
+  save(); render();
+}
+function toClaude(id){
+  const it=getItem(id); if(!it) return;
+  const who=it.artist? it.artist+"の" : "";
+  const p=who+"「"+(it.title||"この曲")+"」の歌詞を解説して。\n"+
+    "①曲全体のテーマとストーリー\n"+
+    "②ライム・フロウ・言葉選びの特徴\n"+
+    "③俺（日本語ラッパー）が自分の曲に\"盗める\"表現を3つ、なぜ効くかも一緒に";
+  copyText(p);
+  toast("プロンプトをコピー。Claudeで貼り付け（長押し／⌘V）", true);
+  setTimeout(()=>{ window.open("https://claude.ai/new","_blank"); }, 250);
+}
+function toGenius(id){
+  const it=getItem(id); if(!it) return;
+  const url=it.geniusUrl || ("https://genius.com/search?q="+encodeURIComponent(((it.artist||"")+" "+(it.title||"")).trim()));
+  window.open(url,"_blank");
+}
+function toSpotify(id){
+  const it=getItem(id); if(!it||!it.spotifyUrl) return;
+  window.open(it.spotifyUrl,"_blank");
+}
+function removeCrate(id){
+  const it=getItem(id); if(!it) return;
+  if(!confirm("CRATEから外す？\n"+(it.title||"無題"))) return;
+  state.crate=state.crate.filter(c=>c.id!==id);
+  save(); render();
+}
+function doneDig(id){
+  const it=getItem(id); if(!it) return;
+  state.seq++;
+  const dig="DIG-"+String(state.seq).padStart(3,"0");
+  state.log.unshift({ n:state.seq, dig, title:it.title||"無題", artist:it.artist||"", doneAt:Date.now(), ym:localYM() });
+  state.crate=state.crate.filter(c=>c.id!==id);
+  save(); render();
+  toast(dig+" 刻んだ 🔥", true);
+}
+
+/* ---------- backup ---------- */
+function backup(){
+  copyText(JSON.stringify(state));
+  toast("バックアップJSONをコピーした", true);
+}
+function restore(){
+  const v=prompt("バックアップJSONを貼って（今のデータは上書き）");
+  if(!v) return;
+  try{
+    const s=JSON.parse(v);
+    if(typeof s!=="object"||!("crate" in s)&&!("log" in s)) throw 0;
+    state={v:"1", seq:s.seq||0, crate:s.crate||[], log:s.log||[]};
+    save(); render();
+    toast("復元した", true);
+  }catch(e){ toast("JSONが読めなかった"); }
+}
+
+/* ---------- render ---------- */
+function fmtDate(ts){ const d=new Date(ts); return (d.getMonth()+1)+"/"+d.getDate(); }
+function render(){
+  // counters
+  const ym=localYM();
+  document.getElementById("cTotal").textContent=state.log.length;
+  document.getElementById("cMonth").textContent=state.log.filter(l=>(l.ym||localYM(new Date(l.doneAt)))===ym).length;
+
+  // crate
+  const cr=document.getElementById("crate");
+  if(!state.crate.length){
+    cr.innerHTML='<div class="empty">CRATEは空。<br>上の投入口に曲を貼るか、Future『The Real Me』を入れてスタート。</div>';
+  } else {
+    cr.innerHTML=state.crate.map(it=>{
+      const hasSpot=!!it.spotifyUrl;
+      return '<div class="card'+(hasSpot?'':' solo')+'" data-id="'+it.id+'">'+
+        '<div class="title" onclick="editField(\''+it.id+'\',\'title\')">'+esc(it.title)+'</div>'+
+        '<div class="artist'+(it.artist?'':' empty')+'" onclick="editField(\''+it.id+'\',\'artist\')">'+(it.artist?esc(it.artist):'アーティスト未設定（タップ）')+'</div>'+
+        '<div class="actions">'+
+          '<button class="btn claude" onclick="toClaude(\''+it.id+'\')">🤖 Claudeに投げる</button>'+
+          '<button class="btn genius" onclick="toGenius(\''+it.id+'\')">GENIUS</button>'+
+          (hasSpot?'<button class="btn spot" onclick="toSpotify(\''+it.id+'\')">▶ 聴く</button>':'')+
+          '<button class="btn done" onclick="doneDig(\''+it.id+'\')">✓ ディグ完了</button>'+
+        '</div>'+
+        '<button class="rm" onclick="removeCrate(\''+it.id+'\')" aria-label="削除">×</button>'+
+      '</div>';
+    }).join("");
+  }
+
+  // log
+  const lg=document.getElementById("log");
+  if(!state.log.length){
+    lg.innerHTML='<div class="empty">まだディグ0。<br>1曲掘ったら、ここに DIG-001 が刻まれる。</div>';
+  } else {
+    lg.innerHTML=state.log.map(l=>
+      '<div class="logrow">'+
+        '<span class="dig">'+esc(l.dig)+'</span>'+
+        '<span class="lt">'+esc(l.title)+(l.artist?' <span class="art">/ '+esc(l.artist)+'</span>':'')+'</span>'+
+        '<span class="ld">'+fmtDate(l.doneAt)+'</span>'+
+      '</div>'
+    ).join("");
+  }
+}
+
+/* ---------- utils ---------- */
+let toastT;
+function toast(msg,ok){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.className="show"+(ok?" ok":"");
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>{ el.className=ok?"ok":""; }, 2200);
+}
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).catch(()=>fallbackCopy(t));
+  } else fallbackCopy(t);
+}
+function fallbackCopy(t){
+  const ta=document.createElement("textarea");
+  ta.value=t; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand("copy"); }catch(e){}
+  document.body.removeChild(ta);
+}
+
+render();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{ navigator.serviceWorker.register("./sw.js").catch(()=>{}); });
+}
+</script>
+</body>
+</html>
