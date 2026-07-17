@@ -1,10 +1,11 @@
-# Digz icon generator — uniform, smaller wordmark
+# Digz icon generator — final Appz-balanced wordmark
 from PIL import Image, ImageDraw, ImageFont
 
 S = 1024
 WHITE = "#ffffff"
 BLACK = "#000000"
 FONT = "Anton.ttf"
+WORDMARK_SIZE = 205
 
 
 def draw_shovel(draw, cx, cy):
@@ -21,7 +22,7 @@ def draw_shovel(draw, cx, cy):
 
 def draw_wordmark(draw):
     text = "Digz"
-    font = ImageFont.truetype(FONT, 185)
+    font = ImageFont.truetype(FONT, WORDMARK_SIZE)
     gap = 7
     widths = []
     for char in text:

@@ -3,7 +3,7 @@ name: Generate Digz icon
 on:
   push:
     branches:
-      - agent/icon-balance
+      - 'agent/**'
     paths:
       - make_icon.py
       - .github/workflows/generate-digz-icon.yml
