@@ -1,4 +1,4 @@
-const CACHE = "digz-v1";
+const CACHE = "digz-v2";
 const CORE = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", (e) => {
